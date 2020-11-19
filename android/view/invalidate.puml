@@ -1,0 +1,30 @@
+@startuml
+    title invalidate
+    View -> View:invalidate
+    View -> View :invalidateInternal
+    View -> ViewParent : invalidateChild
+    ViewParent -> ViewRootImpl : invalidateChild
+    ViewRootImpl -> ViewRootImpl :invalidateChildInParent
+    ViewRootImpl -> ViewRootImpl :invalidateRectOnScreen
+    ViewRootImpl -> ViewRootImpl :scheduleTraversals
+    ViewRootImpl -> Choreographer :postCallback(mTraversalRunnable)
+    Choreographer -> Choreographer :postCallbackDelayed
+    Choreographer -> Choreographer :postCallbackDelayedInternal
+    Choreographer -> Choreographer :scheduleFrameLocked  if (dueTime <= now)
+    Choreographer -> Choreographer :scheduleVsyncLocked
+    Choreographer -> DisplayEventReceiver:scheduleVsync
+    DisplayEventReceiver -> DisplayEventReceiver:nativeScheduleVsync
+    DisplayEventReceiver ->android_view_DisplayEventReceiver.cpp
+    android_view_DisplayEventReceiver.cpp -> NativeDisplayEventReceiver.cpp : scheduleVsync
+    NativeDisplayEventReceiver.cpp->DisplayEventDispatcher.cpp:scheduleVsync
+    DisplayEventDispatcher.cpp ->DisplayEventReceiver.cpp:requestNextVsync(请求一次vsync信号)
+    DisplayEventReceiver.cpp->DisplayEventDispatcher.cpp:handleEvent
+    DisplayEventDispatcher.cpp->DisplayEventDispatcher.cpp:dispatchVsync
+    DisplayEventDispatcher.cpp->DisplayEventReceiver:dispatchVsync
+    DisplayEventReceiver->DisplayEventReceiver:onVsync
+    DisplayEventReceiver->DisplayEventReceiver:sendMessageAtTime
+    DisplayEventReceiver->Choreographer:doFrame
+    Choreographer->View:mTraversalRunnable.run
+    View->View:doTraversal
+    View->View:performTraversals
+@enduml
