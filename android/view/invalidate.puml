@@ -18,6 +18,30 @@
     android_view_DisplayEventReceiver.cpp -> NativeDisplayEventReceiver.cpp : scheduleVsync
     NativeDisplayEventReceiver.cpp->DisplayEventDispatcher.cpp:scheduleVsync
     DisplayEventDispatcher.cpp ->DisplayEventReceiver.cpp:requestNextVsync(请求一次vsync信号)
+    DisplayEventReceiver.cpp -> DisplayEventReceiver.cpp:init
+    DisplayEventReceiver.cpp -> SurfaceComposerClient.cpp:getComposerService
+    SurfaceComposerClient.cpp -> SurfaceComposerClient.cpp:connectLocked
+    SurfaceComposerClient.cpp -> IServiceManager.cpp: getService(SurfaceFlinger)
+    IServiceManager.cpp -> IServiceManager.cpp:defaultServiceManager
+    IServiceManager.cpp -> ProcessState.cpp:getStrongProxyForHandle(0)获得BpBinder,
+    ProcessState.cpp ->IServiceManager.cpp :interface_cast<IServiceManager>(BpBinder(0))<也就是BpServiceManager>
+    IServiceManager.cpp -> IServiceManager.cpp:BpServiceManager.getService
+    IServiceManager.cpp -> IServiceManager.cpp:BpServiceManager.checkService
+    IServiceManager.cpp -> BpBinder.cpp:transact
+    BpBinder.cpp -> IPCThreadState.cpp:transact
+    IPCThreadState.cpp -> IPCThreadState.cpp:writeTransactionData
+    IPCThreadState.cpp -> IPCThreadState.cpp:waitForResponse
+    IPCThreadState.cpp -> IPCThreadState.cpp:talkWithDriver(ioctl调用)(省略驱动细节)
+    IPCThreadState.cpp -> IPCThreadState.cpp:executeCommand
+    IPCThreadState.cpp -> Binder.cpp:transact
+    Binder.cpp -> Binder.cpp:onTransact
+    Binder.cpp -> ISurfaceComposer.cpp:BnSurfaceComposer.onTransact
+    ISurfaceComposer.cpp -> SurfaceFlinger.cpp:createDisplayEventConnection
+    SurfaceFlinger.cpp->EventThread.cpp:requestNextVsync
+    EventThread.cpp -> EventThread.cpp:mCondition.broadcast()
+    EventThread.cpp -> SurfaceFlinger.cpp:threadLoop
+    EventThread.cpp <- SurfaceFlinger.cpp:postEvent
+    EventThread.cpp -> DisplayEventReceiver.cpp:sendEvents
     DisplayEventReceiver.cpp->DisplayEventDispatcher.cpp:handleEvent
     DisplayEventDispatcher.cpp->DisplayEventDispatcher.cpp:dispatchVsync
     DisplayEventDispatcher.cpp->DisplayEventReceiver:dispatchVsync
