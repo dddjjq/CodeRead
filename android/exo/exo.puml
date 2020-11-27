@@ -1,0 +1,18 @@
+@startuml
+    VsMediaPlayer -> SimpleExoPlayer:prepare()
+     SimpleExoPlayer -> SimpleExoPlayer : setMediaSources,prepare
+     SimpleExoPlayer -> ExoPlayerImpl : setMediaSourcesInternal
+     ExoPlayerImpl -> ExoPlayerImplInternal:prepareInternal
+     ExoPlayerImplInternal -> ExoPlayerImplInternal:doSomeWork
+     ExoPlayerImplInternal -> ExoPlayerImplInternal:updatePeriods
+     ExoPlayerImplInternal -> ExoPlayerImplInternal:maybeUpdateLoadingPeriod\nmaybeUpdateReadingPeriod\nmaybeUpdateReadingRenderers\nmaybeUpdatePlayingPeriod
+     ExoPlayerImplInternal -> ProgressiveMediaPeriod:prepare
+     ProgressiveMediaPeriod -> ProgressiveMediaPeriod:startLoading
+     ProgressiveMediaPeriod -> Loader:startLoading
+     Loader -> Loader : run
+     Loader -> ExtractingLoadable : load
+     ExtractingLoadable -> OkHttpDataSource : open
+     ProgressiveMediaPeriod -> ProgressiveMediaPeriod: read
+     ProgressiveMediaPeriod -> Mp4Extractor:read
+     Mp4Extractor -> Mp4Extractor:readAtomHeader
+@enduml
