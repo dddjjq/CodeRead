@@ -1,0 +1,45 @@
+@startuml
+Glide ->Glide : with
+Glide->Glide:getRetriever
+Glide->RequestManagerRetriever:get(RequestManager)
+Glide->RequestManager:become to RequestManager
+RequestManager->RequestManager:load
+RequestManager->RequestManager:asDrawable().load(url)
+RequestManager->RequestBuilder:load
+RequestBuilder->RequestBuilder:loadGeneric
+RequestBuilder->RequestBuilder:into(ImageView)
+note right:最新版本4.12不再建议使用into(ImageView)\n而是使用target，我们这里依然用ImageView
+RequestBuilder->RequestBuilder:into
+RequestBuilder->RequestBuilder:buildRequest
+note right:递归获取request，如果有errorBuilder，\n构建一个ErrorRequestCoordinator\n默认返回一个SingleRequest
+RequestBuilder->ViewTarget:setRequest
+RequestBuilder->RequestManager:track
+RequestManager->RequestTracker:runRequest
+RequestTracker->SingleRequest:begin
+SingleRequest->SingleRequest:onSizeReady
+SingleRequest->Engine:load
+Engine->Engine:waitForExistingOrStartNewJob
+Engine->EngineJob:start DecodeJob
+EngineJob->DecodeJob:run
+DecodeJob->DecodeJob:runWrapped
+DecodeJob->DecodeJob:getNextStage,getNextGenerator,runGenerators
+DecodeJob->SourceGenerator:startNext
+SourceGenerator->HttpUrlFetcher:loadData
+HttpUrlFetcher->SourceGenerator:onDataReady
+SourceGenerator->SourceGenerator:onDataReadyInternal
+SourceGenerator->DecodeJob:onDataFetcherReady
+DecodeJob->DecodeJob:decodeFromRetrievedData
+note right:decode
+DecodeJob->DecodeJob:notifyEncodeAndRelease
+DecodeJob->DecodeJob:notifyComplete
+DecodeJob->EngineJob:onResourceReady
+EngineJob->EngineJob:notifyCallbacksOfResult
+EngineJob->EngineJob:CallResourceReady.run
+EngineJob->EngineJob:callCallbackOnResourceReady
+EngineJob->SingleRequest:onResourceReady
+SingleRequest->ImageViewTarget:onResourceReady
+ImageViewTarget->ImageViewTarget:setResourceInternal
+note right:这里是之前调用as(Bitmap.class)方法之后，\nTarget就是BitmapTarget
+ImageViewTarget->BitmapImageViewTarget:setResource
+
+@enduml
