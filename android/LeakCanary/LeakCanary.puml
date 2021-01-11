@@ -1,0 +1,37 @@
+@startuml
+title LeakCanary
+AppWatcherInstaller->AppWatcherInstaller:onCreate
+AppWatcherInstaller->AppWatcher:manualInstall
+AppWatcher->InternalAppWatcher:install
+InternalAppWatcher->InternalAppWatcher:ActivityDestroyWatcher.install\nFragmentDestroyWatcher.install\n...\n以Activity为例
+InternalAppWatcher->ActivityDestroyWatcher:onActivityDestroyed
+ActivityDestroyWatcher->ObjectWatcher:watch
+ObjectWatcher->ObjectWatcher:run gc and new KeyedWeakReference
+ObjectWatcher->ObjectWatcher:delay 5s moveToRetained
+ObjectWatcher->OnObjectRetainedListener:onObjectRetained
+OnObjectRetainedListener->InternalLeakCanary:scheduleRetainedObjectCheck
+InternalLeakCanary->HeapDumpTrigger:scheduleRetainedObjectCheck
+HeapDumpTrigger->HeapDumpTrigger:checkRetainedObjects
+HeapDumpTrigger->HeapDumpTrigger:checkRetainedCount is larger than retainedVisibleThreshold?
+HeapDumpTrigger->HeapDumpTrigger:dumpHeap
+HeapDumpTrigger->HeapDumpTrigger:saveResourceIdNamesToMemory
+HeapDumpTrigger->AndroidHeapDumper:dumpHeap
+AndroidHeapDumper->HeapAnalyzerService:runAnalysis
+HeapAnalyzerService->HeapAnalyzerService:onHandleIntentInForeground
+HeapAnalyzerService->HeapAnalyzerService:analyzeHeap
+HeapAnalyzerService->HeapAnalyzer:analyze
+HeapAnalyzer->ConstantMemoryMetricsDualSourceProvider:openHeapGraph
+HeapAnalyzer->HeapAnalyzer.FindLeakInput:analyzeGraph
+HeapAnalyzer.FindLeakInput->LeakingObjectFinder:findLeakingObjectIds
+HeapAnalyzer.FindLeakInput->HeapAnalyzer.FindLeakInput:findLeaks
+HeapAnalyzer.FindLeakInput->PathFinder:findPathsFromGcRoots
+PathFinder->PathFinder:findPathsFromGcRoots
+PathFinder->PathFinder:enqueueGcRoots
+PathFinder->PathFinder:enqueue
+PathFinder->HeapAnalyzer.FindLeakInput:findUnreachableObjects
+HeapAnalyzer.FindLeakInput->ObjectInspector:inspect
+HeapAnalyzer.FindLeakInput->HeapAnalyzer.FindLeakInput:buildLeakTraceObjects
+HeapAnalyzer.FindLeakInput->HeapAnalyzer.FindLeakInput:deduplicateShortestPaths
+HeapAnalyzer.FindLeakInput->HeapAnalyzer.FindLeakInput:inspectObjects
+HeapAnalyzer.FindLeakInput->HeapAnalyzer:HeapAnalysisSuccess
+@enduml
